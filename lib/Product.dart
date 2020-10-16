@@ -63,8 +63,7 @@ class _Product extends State<Product>{
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          gradient: LinearGradient(
-                              colors: [Colors.orange, Colors.deepOrange])),
+                          color: Colors.orangeAccent),
                       child: CircleAvatar(
                         radius: 40,
                         backgroundImage: NetworkImage("https://flutter.io/images/catalog-widget-placeholder.png"),//AssetImage("assets/images/app_logo.png"),
