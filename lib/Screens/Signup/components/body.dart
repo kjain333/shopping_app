@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shoppingapp/MainPage.dart';
 import 'package:shoppingapp/Screens/Login/login_screen.dart';
 import 'package:shoppingapp/Screens/Signup/components/background.dart';
 import 'package:shoppingapp/Screens/Signup/components/or_divider.dart';
@@ -7,8 +8,6 @@ import 'package:shoppingapp/components/already_have_an_account_acheck.dart';
 import 'package:shoppingapp/components/rounded_button.dart';
 import 'package:shoppingapp/components/rounded_input_field.dart';
 import 'package:shoppingapp/components/rounded_password_field.dart';
-import 'package:flutter_svg/svg.dart';
-
 class Body extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -32,7 +31,9 @@ class Body extends StatelessWidget {
             ),
             RoundedButton(
               text: "SIGNUP",
-              press: () {},
+              press: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context)=>MainPage()));
+              },
             ),
             SizedBox(height: size.height * 0.03),
             AlreadyHaveAnAccountCheck(
@@ -53,15 +54,15 @@ class Body extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 SocalIcon(
-                  iconSrc: "assets/icons/facebook.svg",
+                  iconSrc: "Assets/icons/facebook.svg",
                   press: () {},
                 ),
                 SocalIcon(
-                  iconSrc: "assets/icons/twitter.svg",
+                  iconSrc: "Assets/icons/twitter.svg",
                   press: () {},
                 ),
                 SocalIcon(
-                  iconSrc: "assets/icons/google-plus.svg",
+                  iconSrc: "Assets/icons/google-plus.svg",
                   press: () {},
                 ),
               ],

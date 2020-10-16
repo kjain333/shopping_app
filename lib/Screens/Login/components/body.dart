@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:shoppingapp/MainPage.dart';
 import './background.dart';
 import 'package:shoppingapp/Screens/Signup/signup_screen.dart';
 import 'package:shoppingapp/components/already_have_an_account_acheck.dart';
 import 'package:shoppingapp/components/rounded_button.dart';
 import 'package:shoppingapp/components/rounded_input_field.dart';
 import 'package:shoppingapp/components/rounded_password_field.dart';
-import 'package:flutter_svg/svg.dart';
-
 class Body extends StatelessWidget {
   const Body({
     Key key,
@@ -34,7 +33,9 @@ class Body extends StatelessWidget {
             ),
             RoundedButton(
               text: "LOGIN",
-              press: () {},
+              press: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context)=>MainPage()));
+              },
             ),
             SizedBox(height: size.height * 0.03),
             AlreadyHaveAnAccountCheck(
