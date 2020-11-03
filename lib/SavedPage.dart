@@ -1,7 +1,12 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shoppingapp/Product.dart';
 import 'package:shoppingapp/components/themes.dart';
+import 'package:shoppingapp/models/ProductModel.dart';
+import 'package:shoppingapp/models/SharedPreferences.dart';
+
+import 'components/oval_right_clipper.dart';
 
 class SavedPage extends StatefulWidget{
   @override
@@ -11,26 +16,137 @@ class SavedPage extends StatefulWidget{
 }
 int selectedIndex = 0;
 List<String> categories = ["All","Traditional Clothes","Jewellery","Pickles","Spices","Hand Craft","Food Items","Daily Needs"];
-List<bool> bookmarked;
-List<bool> cart;
-List<int> items;
+List<ProductModel> items;
+bool expanded = false;
 class _SavedPageState extends State<SavedPage>{
+  SharedPref sharedPref = new SharedPref();
+  loadSharedPref() async {
+    try{
+      final prefs = await SharedPreferences.getInstance();
+      items.clear();
+      Set<String> set;
+      set = prefs.getKeys();
+      for(String value in set)
+      {
+        if(value!='freshInstall'&&value.startsWith('bookmark'))
+        {
+          ProductModel s = ProductModel.fromJson(await sharedPref.read(value));
+          if(!items.contains(s))
+            items.add(s);
+        }
+      }
+    } catch (e){
+      print(e);
+    }
+    setState(() {
+    });
+  }
   @override
   void initState() {
-    bookmarked = new List(50);
-    items = new List(50);
-    cart = new List(50);
-    for(int i=0;i<50;i++)
-    {
-      bookmarked[i]=false;
-      cart[i]=false;
-      items[i]=i;
-    }
+    items = new List();
+    loadSharedPref();
     super.initState();
+  }
+  Divider _buildDivider() {
+    return Divider(
+      color: divider,
+    );
+  }
+
+  Widget _buildRow(IconData icon, String title,int index, {bool showBadge = false}) {
+
+    return GestureDetector(
+      onTap: (){
+        return null;
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 5.0),
+        child: Row(children: [
+          Icon(
+            icon,
+            color: active,
+          ),
+          SizedBox(width: 10.0),
+          Text(
+            title,
+            style: subStyle,
+          ),
+        ]),
+      ),
+    );
+  }
+  buildDrawer(){
+    return ClipPath(
+      clipper: OvalRightBorderClipper(),
+      child: Drawer(
+        child: Container(
+          padding: const EdgeInsets.only(left: 16.0, right: 40),
+          decoration: BoxDecoration(
+              color: primary, boxShadow: [BoxShadow(color: Colors.black45)]),
+          width: 300,
+          child: SafeArea(
+            child: SingleChildScrollView(
+              child: Column(
+                children: <Widget>[
+                  SizedBox(
+                    height: 30,
+                  ),
+                  Container(
+                    height: 90,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.orangeAccent),
+                    child: CircleAvatar(
+                      radius: 40,
+                      backgroundImage: NetworkImage("https://flutter.io/images/catalog-widget-placeholder.png"),//AssetImage("assets/images/app_logo.png"),
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.all(20),
+                    child: Text("@instagram_handle",style: subStyle),
+                  ),
+                  SizedBox(height: 5.0),
+                  SizedBox(height: 70.0),
+                  Center(
+                    child: Column(
+                      children: <Widget>[
+                        _buildRow(Icons.share, "Share App",1),
+                        _buildDivider(),
+                        _buildRow(Icons.account_circle, "Edit Profile",2, showBadge: true),
+                        _buildDivider(),
+                        _buildRow(Icons.star, "Rate Us",3,showBadge: true),
+                        _buildDivider(),
+                        _buildRow(Icons.info_outline,"Terms and Conditions",4),
+                        _buildDivider(),
+                      ],
+                    ),
+                  )
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        appBar: AppBar(
+          title: Text(
+            'Khati Khuwa',
+            style: headStyle,
+          ),
+          actions: [
+            IconButton(icon: Icon(Icons.search_rounded), onPressed: (){
+              setState(() {
+                expanded = !expanded;
+              });
+            })
+          ],
+        ),
+        drawer: buildDrawer(),
         body: Stack(
           children: <Widget>[
             Container(
@@ -91,17 +207,17 @@ class _SavedPageState extends State<SavedPage>{
               ),
             ),
             Positioned(
-                top: 200,
+                top: (expanded)?200:0,
                 child: Container(
                     width: MediaQuery.of(context).size.width,
-                    height: MediaQuery.of(context).size.height-250,
+                    height: MediaQuery.of(context).size.height-((expanded)?250:0),
                     decoration: BoxDecoration(
                       color: Colors.white,
                     ),
                     child: Column(
                       children: <Widget>[
                         Container(
-                            height: MediaQuery.of(context).size.height-360,
+                            height: MediaQuery.of(context).size.height-((expanded)?360:150),
                             width: MediaQuery.of(context).size.width,
                             child: SingleChildScrollView(
                               child: Wrap(
@@ -117,7 +233,7 @@ class _SavedPageState extends State<SavedPage>{
         )
     );
   }
-  Widget MyData(int i){
+  Widget MyData(ProductModel productModel){
     return GestureDetector(
       child: Container(
         width: MediaQuery.of(context).size.width/2,
@@ -134,35 +250,35 @@ class _SavedPageState extends State<SavedPage>{
                 width: 150,
                 decoration: BoxDecoration(
                     image: DecorationImage(
-                      image: AssetImage("Assets/Images/jewellery.png"),
+                      image: NetworkImage(productModel.url),
                       fit: BoxFit.fill,
                     )
                 ),
               ),
             ),
             ListTile(
-              title: Text("Assamese Traditional Jewellery",style: style2,),
-              subtitle: Text("Price: Rs. 800/-",style: subStyle,),
+              title: Text(productModel.title,style: style2,),
+              subtitle: Text("Price: Rs. "+productModel.price+"/-",style: subStyle,),
             ),
-            Align(
+           /* Align(
               alignment: Alignment.bottomRight,
               child: GestureDetector(
                 child: Padding(
                   padding: EdgeInsets.only(right: 10,bottom: 10),
-                  child: (cart[i])?Icon(Icons.remove):Icon(Icons.add),
+                  child: (cart[items.indexOf(productModel)])?Icon(Icons.remove):Icon(Icons.add),
                 ),
                 onTap: (){
                   setState(() {
-                    cart[i]=!cart[i];
+                    cart[items.indexOf(productModel)]=!cart[items.indexOf(productModel)];
                   });
                 },
               ),
-            ),
+            ),*/
           ],
         ),
       ),
       onTap: (){
-        Navigator.push(context, MaterialPageRoute(builder: (context)=>Product()));
+        Navigator.push(context, MaterialPageRoute(builder: (context)=>Product(productModel)));
       },
     );
   }

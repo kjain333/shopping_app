@@ -107,19 +107,7 @@ class _MainPageState extends State<MainPage> {
     }
 
     return Scaffold(
-        floatingActionButton: FloatingActionButton(
-          child: Icon(Icons.shopping_cart),
-          onPressed: (){
-            Navigator.push(context, MaterialPageRoute(builder: (context)=>PlaceOrder()));
-          },
-        ),
-        appBar: AppBar(
-          title: Text(
-            'Khati Khuwa',
-            style: headStyle,
-          ),
-        ),
-        drawer: buildDrawer(),
+
         body: PageView(
           children: _pageOptions,
           onPageChanged: (index) {

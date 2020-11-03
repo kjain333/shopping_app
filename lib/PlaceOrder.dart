@@ -1,8 +1,12 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shoppingapp/SavedPage.dart';
 import 'package:shoppingapp/components/themes.dart';
+import 'package:shoppingapp/models/ProductModel.dart';
 
 import 'components/oval_right_clipper.dart';
+import 'models/SharedPreferences.dart';
 
 class PlaceOrder extends StatefulWidget{
   @override
@@ -10,14 +14,16 @@ class PlaceOrder extends StatefulWidget{
     return _PlaceOrder();
   }
 }
-List<String> orderlist = ["Traditional Assamese Jewellery","Traditional Assamese Jewellery"];
-List<int> quantity = [1,1];
+//List<String> orderlist = ["Traditional Assamese Jewellery","Traditional Assamese Jewellery"];
+List<int> quantity;
+List<ProductModel> myitems;
 List<String> addresstype = ["Home Address","Office Address"];
 List<String> address = ["Street, City 110000\nXYZ State, India","Street, City 220000\nABC State, India"];
 String selectedaddress = addresstype[0];
 String addressdetail = address[0];
+var total =100;
+bool Loading = true;
 List<DropdownMenuItem<String>> addressDropDown;
-List<int> index = [0,1];
 class _PlaceOrder extends State<PlaceOrder>{
   List<DropdownMenuItem<String>> buildDropDownMenuItems(categoryList) {
     List<DropdownMenuItem<String>> items = List();
@@ -29,7 +35,13 @@ class _PlaceOrder extends State<PlaceOrder>{
     }
     return items;
   }
-
+  void DeleteProduct(String id) async {
+    final prefs = SharedPreferences.getInstance();
+    await sharedPref.remove(id);
+    setState(() {
+      Loading = false;
+    });
+  }
   onChangeDropDownItem(String item) {
     setState(() {
       selectedaddress = item;
@@ -43,9 +55,41 @@ class _PlaceOrder extends State<PlaceOrder>{
         }
     });
   }
+  SharedPref sharedPref = new SharedPref();
+  loadSharedPref() async {
+    try{
+      final prefs = await SharedPreferences.getInstance();
+      myitems.clear();
+      Set<String> set;
+      set = prefs.getKeys();
+      for(String value in set)
+      {
+        if(value!='freshInstall'&&value.startsWith('cart'))
+        {
+          ProductModel s = ProductModel.fromJson(await sharedPref.read(value));
+          if(!myitems.contains(s))
+            {
+              myitems.add(s);
+              quantity.add(1);
+              total+=int.parse(s.price);
+            }
+        }
+      }
+    } catch (e){
+      print(e);
+    }
+    setState(() {
+      Loading = false;
+    });
+  }
   @override
   void initState() {
     addressDropDown = buildDropDownMenuItems(addresstype);
+    myitems = new List();
+    quantity = new List();
+    loadSharedPref();
+    total=100;
+    print('yo');
     super.initState();
   }
   @override
@@ -134,120 +178,136 @@ class _PlaceOrder extends State<PlaceOrder>{
         ),
       );
     }
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Khati Khuwa',
-          style: headStyle,
-        ),
-      ),
-      drawer: buildDrawer(),
-        body: Stack(
-          children: <Widget>[
-            SingleChildScrollView(
-              child: Column(
-                children: <Widget>[
-                  SizedBox(
-                    height: 20,
-                  ),
-                  Center(
-                    child:  Text("CHECKOUT ITEMS",style: style2,),
-                  ),
-                  Column(
-                    children: index.map((e) => MyTile(e)).toList(),
-                  ),
-                  Center(
-                    child:  Text("SHIPPING",style: style2,),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.symmetric(
-                        horizontal: 20, vertical: 20),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(15),
-                        border: Border.all(
-                            color: Colors.grey),
-                      ),
-                      child: Padding(
-                        padding:
-                        EdgeInsets.only(left: 40, right: 40,top: 10,bottom: 10),
-                        child: DropdownButton(
-                          iconEnabledColor: Colors.black,
-                          iconDisabledColor: Colors.black,
-                          hint: Text("Select Category"),
-                          isExpanded: true,
-                          value: selectedaddress,
-                          items: addressDropDown,
-                          onChanged: onChangeDropDownItem,
-                        ),
-                      ),
-                    ),
-                  ),
-                  Text(addressdetail,style: subStyle,),
-                  SizedBox(
-                    height: 20,
-                  ),
-                  Center(
-                    child:  Text("COURIER",style: style2,),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.all(20),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: Colors.grey)
-                      ),
-                      child: ListTile(
-                        title: Text("Regular Service(10 days)",style: style2,),
-                        trailing: Text("Rs. 100",style: subStyle,),
-                      ),
-                    ),
-                  )
-                ],
-              ),
+    return WillPopScope(
+      child: Scaffold(
+          appBar: AppBar(
+            title: Text(
+              'Khati Khuwa',
+              style: headStyle,
             ),
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: Container(
-                height: 80,
-                width: MediaQuery.of(context).size.width,
-                color: Colors.white,
-                child: Align(
-                  alignment: Alignment.centerRight,
-                  child: Padding(
-                    padding: EdgeInsets.only(right: 20),
-                    child:  Container(
-                        height: 60,
+          ),
+          drawer: buildDrawer(),
+          body: (Loading==true)?Center(
+            child: CircularProgressIndicator(),
+          ):(myitems.length==0)?Center(
+            child: Padding(
+              padding: EdgeInsets.all(20),
+              child: Text("Get Started with your shopping crate by adding products to your cart",style: headStyle1,),
+            ),
+          ):Stack(
+            children: <Widget>[
+              SingleChildScrollView(
+                child: Column(
+                  children: <Widget>[
+                    SizedBox(
+                      height: 20,
+                    ),
+                    Center(
+                      child:  Text("CHECKOUT ITEMS",style: style2,),
+                    ),
+                    Column(
+                      children: myitems.map((e) => MyTile(e)).toList(),
+                    ),
+                    Center(
+                      child:  Text("SHIPPING",style: style2,),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 20),
+                      child: Container(
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(5),
-                          color: Colors.lightBlueAccent,
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(15),
+                          border: Border.all(
+                              color: Colors.grey),
                         ),
                         child: Padding(
-                          padding: EdgeInsets.all(10),
-                          child: Wrap(
-                            children: <Widget>[
-                              Text("Place Order:\nRs. 1700",style: style3,),
-                              SizedBox(
-                                width: 30,
-                              ),
-                              Padding(
-                                padding: EdgeInsets.only(top: 10,bottom: 10),
-                                child: Icon(Icons.arrow_forward_ios,color: Colors.white,size: 20,),
-                              )
-                            ],
+                          padding:
+                          EdgeInsets.only(left: 40, right: 40,top: 10,bottom: 10),
+                          child: DropdownButton(
+                            iconEnabledColor: Colors.black,
+                            iconDisabledColor: Colors.black,
+                            hint: Text("Select Category"),
+                            isExpanded: true,
+                            value: selectedaddress,
+                            items: addressDropDown,
+                            onChanged: onChangeDropDownItem,
                           ),
-                        )
+                        ),
+                      ),
                     ),
-                  )
+                    Text(addressdetail,style: subStyle,),
+                    SizedBox(
+                      height: 20,
+                    ),
+                    Center(
+                      child:  Text("COURIER",style: style2,),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.all(20),
+                      child: Container(
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: Colors.grey)
+                        ),
+                        child: ListTile(
+                          title: Text("Regular Service(10 days)",style: style2,),
+                          trailing: Text("Rs. 100",style: subStyle,),
+                        ),
+                      ),
+                    )
+                  ],
                 ),
               ),
-            )
-          ],
-        )
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: Container(
+                  height: 80,
+                  width: MediaQuery.of(context).size.width,
+                  color: Colors.white,
+                  child: Align(
+                      alignment: Alignment.centerRight,
+                      child: Padding(
+                        padding: EdgeInsets.only(right: 20),
+                        child:  Container(
+                            height: 60,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(5),
+                              color: Colors.lightBlueAccent,
+                            ),
+                            child: Padding(
+                              padding: EdgeInsets.all(10),
+                              child: Wrap(
+                                children: <Widget>[
+                                  Text("Place Order:\nRs. "+total.toString(),style: style3,),
+                                  SizedBox(
+                                    width: 30,
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.only(top: 10,bottom: 10),
+                                    child: Icon(Icons.arrow_forward_ios,color: Colors.white,size: 20,),
+                                  )
+                                ],
+                              ),
+                            )
+                        ),
+                      )
+                  ),
+                ),
+              )
+            ],
+          )
+      ),
+      onWillPop: () async{
+        Navigator.pop(context,(){
+          setState(() {
+          });
+        });
+        return true;
+      },
     );
   }
-  Widget MyTile(int index)
+  Widget MyTile(ProductModel productModel)
   {
     return Padding(
       padding: EdgeInsets.all(20),
@@ -266,7 +326,7 @@ class _PlaceOrder extends State<PlaceOrder>{
                 decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(5),
                     image: DecorationImage(
-                      image: AssetImage("Assets/Images/jewellery.png"),
+                      image: NetworkImage(productModel.url),
                       fit: BoxFit.fill,
                     )
                 ),
@@ -281,11 +341,11 @@ class _PlaceOrder extends State<PlaceOrder>{
                     SizedBox(
                       height: 10,
                     ),
-                    Text("Traditional Assamese Jewellery",style: style2,),
+                    Text(productModel.title,style: style2,),
                     SizedBox(
                       height: 10,
                     ),
-                    Text("Price: Rs. 800/-",style: subStyle,),
+                    Text("Price: Rs. "+productModel.price+"/-",style: subStyle,),
                     SizedBox(
                       height: 10,
                     ),
@@ -297,15 +357,19 @@ class _PlaceOrder extends State<PlaceOrder>{
                             child: Icon(Icons.remove),
                             onTap: (){
                               setState(() {
-                                if(quantity[index]!=1)
-                                quantity[index]--;
+                                if(quantity[myitems.indexOf(productModel)]!=1)
+                                {
+                                  quantity[myitems.indexOf(productModel)]--;
+                                  total-=int.parse(productModel.price);
+                                }
+
                               });
                             },
                           ),
                         SizedBox(
                           width: 10,
                         ),
-                        Text("Quantity: "+quantity[index].toString(),style: subStyle,),
+                        Text("Quantity: "+quantity[myitems.indexOf(productModel)].toString(),style: subStyle,),
                         SizedBox(
                           width: 10,
                         ),
@@ -313,7 +377,8 @@ class _PlaceOrder extends State<PlaceOrder>{
                           child: Icon(Icons.add),
                           onTap: (){
                             setState(() {
-                              quantity[index]++;
+                              quantity[myitems.indexOf(productModel)]++;
+                              total+=int.parse(productModel.price);
                             });
                           },
                         ),
@@ -324,20 +389,15 @@ class _PlaceOrder extends State<PlaceOrder>{
               ),
               padding: EdgeInsets.all(0),
             ),
-            Padding(
-              child: Container(
-                width: 20,
-                child: GestureDetector(
-                  child: Icon(Icons.delete,size: 20,),
-                  onTap: (){
-                    setState(() {
-                      orderlist.removeAt(0);
-                    });
-                  },
-                ),
-              ),
-              padding: EdgeInsets.all(10),
-            )
+            IconButton(icon: Icon(Icons.delete), onPressed: (){
+              setState(() {
+                Loading = true;
+                total-=int.parse(productModel.price)*quantity[myitems.indexOf(productModel)];
+                DeleteProduct('cart'+productModel.id);
+                quantity.removeAt(myitems.indexOf(productModel));
+                myitems.remove(productModel);
+              });
+            })
           ],
         ),
       ),
