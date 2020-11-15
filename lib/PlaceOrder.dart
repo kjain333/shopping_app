@@ -4,6 +4,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shoppingapp/SavedPage.dart';
 import 'package:shoppingapp/components/themes.dart';
 import 'package:shoppingapp/models/ProductModel.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:toast/toast.dart';
 
 import 'components/oval_right_clipper.dart';
 import 'models/SharedPreferences.dart';
@@ -25,6 +28,7 @@ var total =100;
 bool Loading = true;
 List<DropdownMenuItem<String>> addressDropDown;
 class _PlaceOrder extends State<PlaceOrder>{
+  final databaseReference = Firestore.instance;
   List<DropdownMenuItem<String>> buildDropDownMenuItems(categoryList) {
     List<DropdownMenuItem<String>> items = List();
     for (String category in categoryList) {
@@ -40,6 +44,30 @@ class _PlaceOrder extends State<PlaceOrder>{
     await sharedPref.remove(id);
     setState(() {
       Loading = false;
+    });
+  }
+  void createOrder() async {
+    List orderedlist = new List();
+    for(int i=0;i<myitems.length;i++)
+      {
+        orderedlist.add(myitems[i].toJson());
+      }
+    var user = {
+      'name': 'My Name',
+      'email': 'abcd@gmail.com',
+      'phone': '9876543210'
+    };
+    DocumentReference ref = await databaseReference.collection("orders").add({'products': orderedlist,'quantities': quantity,'address': addressdetail,'user': user}).then((value){
+      Toast.show("Order Placed Successfully", context,duration: Toast.LENGTH_LONG,gravity: Toast.BOTTOM,textColor: Colors.white,backgroundColor: Colors.green,);
+      setState(() {
+        Loading = false;
+      });
+      return null;
+    },onError: (error){
+      setState(() {
+        Loading = false;
+      });
+      Toast.show(error.toString(), context,duration: Toast.LENGTH_LONG,gravity: Toast.BOTTOM,textColor: Colors.white,backgroundColor: Colors.red,);
     });
   }
   onChangeDropDownItem(String item) {
@@ -269,27 +297,35 @@ class _PlaceOrder extends State<PlaceOrder>{
                       alignment: Alignment.centerRight,
                       child: Padding(
                         padding: EdgeInsets.only(right: 20),
-                        child:  Container(
-                            height: 60,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(5),
-                              color: Colors.lightBlueAccent,
-                            ),
-                            child: Padding(
-                              padding: EdgeInsets.all(10),
-                              child: Wrap(
-                                children: <Widget>[
-                                  Text("Place Order:\nRs. "+total.toString(),style: style3,),
-                                  SizedBox(
-                                    width: 30,
-                                  ),
-                                  Padding(
-                                    padding: EdgeInsets.only(top: 10,bottom: 10),
-                                    child: Icon(Icons.arrow_forward_ios,color: Colors.white,size: 20,),
-                                  )
-                                ],
+                        child:  GestureDetector(
+                          child: Container(
+                              height: 60,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(5),
+                                color: Colors.lightBlueAccent,
                               ),
-                            )
+                              child: Padding(
+                                padding: EdgeInsets.all(10),
+                                child: Wrap(
+                                  children: <Widget>[
+                                    Text("Place Order:\nRs. "+total.toString(),style: style3,),
+                                    SizedBox(
+                                      width: 30,
+                                    ),
+                                    Padding(
+                                      padding: EdgeInsets.only(top: 10,bottom: 10),
+                                      child: Icon(Icons.arrow_forward_ios,color: Colors.white,size: 20,),
+                                    )
+                                  ],
+                                ),
+                              )
+                          ),
+                          onTap: (){
+                              setState(() {
+                                Loading = true;
+                                createOrder();
+                              });
+                          },
                         ),
                       )
                   ),
