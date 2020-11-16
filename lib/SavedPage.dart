@@ -234,7 +234,16 @@ class _SavedPageState extends State<SavedPage>{
     );
   }
   Widget MyData(ProductModel productModel){
-    return GestureDetector(
+    int flag=0;
+    for(int i=0;i<productModel.categories.length;i++)
+    {
+      if(productModel.categories[i]==categories[selectedIndex])
+      {
+        flag=1;
+        break;
+      }
+    }
+    return (flag==0)?Container(height: 0,width: 0,):GestureDetector(
       child: Container(
         width: MediaQuery.of(context).size.width/2,
         decoration: BoxDecoration(

@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:shoppingapp/MainPage.dart';
@@ -17,11 +18,14 @@ class Body extends StatefulWidget {
 
 class _BodyState extends State<Body> {
 
-  String email, password;
+  String email, password,contact,name;
   final FirebaseAuth _auth = FirebaseAuth.instance;
-
+  final dataReference = Firestore.instance;
   GlobalKey<FormState> formkey = GlobalKey<FormState>();
-
+  final emailValidator = MultiValidator([
+    RequiredValidator(errorText: 'E-mail is required'),
+    EmailValidator(errorText: 'Enter valid email address')
+  ]);
   final passwordValidator = MultiValidator([
     RequiredValidator(errorText: 'password is required'),
     MinLengthValidator(8, errorText: 'password must be at least 8 digits long'),
@@ -83,6 +87,26 @@ class _BodyState extends State<Body> {
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(30.0),
                           ),
+                          labelText: 'Name',
+                        ),
+                        onChanged: (textValue) {
+                          setState(() {
+                            name = textValue;
+                          });
+                        },
+                        validator: RequiredValidator(errorText: 'Name is required'),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.symmetric(
+                          vertical: 10.0,
+                          horizontal: 50.0,
+                        ),
+                      ),
+                      TextFormField(
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(30.0),
+                          ),
                           labelText: 'E-mail',
                         ),
                         onChanged: (textValue) {
@@ -90,8 +114,8 @@ class _BodyState extends State<Body> {
                             email = textValue;
                           });
                         },
-                        validator: EmailValidator(
-                            errorText: 'enter a valid email address'),
+                        validator:
+                          emailValidator
                       ),
                       Padding(
                         padding: EdgeInsets.symmetric(
@@ -112,6 +136,26 @@ class _BodyState extends State<Body> {
                           });
                         },
                         validator: passwordValidator,
+                      ),
+                      Padding(
+                        padding: EdgeInsets.symmetric(
+                          vertical: 10.0,
+                          horizontal: 50.0,
+                        ),
+                      ),
+                      TextFormField(
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(30.0),
+                          ),
+                          labelText: 'Contact Number',
+                        ),
+                        onChanged: (textValue) {
+                          setState(() {
+                            contact = textValue;
+                          });
+                        },
+                        validator: LengthRangeValidator(min: 10,max: 10,errorText: 'Enter correct mobile number'),
                       ),
                       Padding(
                         padding: EdgeInsets.symmetric(

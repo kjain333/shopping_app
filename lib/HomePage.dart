@@ -291,7 +291,16 @@ class _HomePageState extends State<HomePage>{
     );
   }
   Widget MyData(QueryDocumentSnapshot querydata){
-      return GestureDetector(
+      int flag=0;
+      for(int i=0;i<querydata['categories'].length;i++)
+        {
+          if(querydata['categories'][i]==categories[selectedIndex])
+            {
+              flag=1;
+              break;
+            }
+        }
+      return (flag==0)?Container(height: 0,width: 0,):GestureDetector(
         child: Container(
           width: MediaQuery.of(context).size.width/2,
           decoration: BoxDecoration(

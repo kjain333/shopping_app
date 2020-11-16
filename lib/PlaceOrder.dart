@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -28,6 +29,7 @@ var total =100;
 bool Loading = true;
 List<DropdownMenuItem<String>> addressDropDown;
 class _PlaceOrder extends State<PlaceOrder>{
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   final databaseReference = Firestore.instance;
   List<DropdownMenuItem<String>> buildDropDownMenuItems(categoryList) {
     List<DropdownMenuItem<String>> items = List();
@@ -117,7 +119,7 @@ class _PlaceOrder extends State<PlaceOrder>{
     quantity = new List();
     loadSharedPref();
     total=100;
-    print('yo');
+    print(_auth.currentUser);
     super.initState();
   }
   @override
@@ -283,6 +285,9 @@ class _PlaceOrder extends State<PlaceOrder>{
                           trailing: Text("Rs. 100",style: subStyle,),
                         ),
                       ),
+                    ),
+                    SizedBox(
+                      height: 100,
                     )
                   ],
                 ),

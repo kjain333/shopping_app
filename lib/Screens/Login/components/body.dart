@@ -16,7 +16,10 @@ class _BodyState extends State<Body> {
 
   String email, password;
   final FirebaseAuth _auth = FirebaseAuth.instance;
-
+  final emailValidator = MultiValidator([
+    RequiredValidator(errorText: 'E-mail is required'),
+    EmailValidator(errorText: 'Enter valid email address')
+  ]);
   GlobalKey<FormState> formkey = GlobalKey<FormState>();
 
   final passwordValidator = MultiValidator([
@@ -87,8 +90,7 @@ class _BodyState extends State<Body> {
                             email = textValue;
                           });
                         },
-                        validator: EmailValidator(
-                            errorText: 'enter a valid email address'),
+                        validator: emailValidator,
                       ),
                       Padding(
                         padding: EdgeInsets.symmetric(
@@ -108,6 +110,7 @@ class _BodyState extends State<Body> {
                             password = textValue;
                           });
                         },
+                        validator: passwordValidator,
                       ),
                       Padding(
                         padding: EdgeInsets.symmetric(
