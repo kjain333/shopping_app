@@ -11,14 +11,15 @@ import 'package:shoppingapp/components/rounded_button.dart';
 import 'package:form_field_validator/form_field_validator.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shoppingapp/database.dart';
+
 class Body extends StatefulWidget {
   @override
   _BodyState createState() => _BodyState();
 }
 
 class _BodyState extends State<Body> {
-
-  String email, password,contact,name;
+  String email, password, contact, name;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final dataReference = Firestore.instance;
   GlobalKey<FormState> formkey = GlobalKey<FormState>();
@@ -33,32 +34,41 @@ class _BodyState extends State<Body> {
         errorText: 'passwords must have at least one special character')
   ]);
 
-  void _createUser({String email,String pass}){
-  _auth.createUserWithEmailAndPassword(email: email, password:pass).then((authResult){
-    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>MainPage()));
-  }).catchError((err){
-    print(err.code);
-    if(err.code == 'email-already-in-use'){
-      showCupertinoDialog(context: context, builder: (context){
-        return CupertinoAlertDialog(
-          title: Text(
-            'This email already has an account associated with it'
-          ),
-          actions: <Widget>[
-            CupertinoDialogAction(child: Text('OK'),
-            onPressed: (){
-              Navigator.pop(context);
-            },)
-          ],
-        );
-      });
-    }
-  });
+  void _createUser({String email, String pass}) async {
+    _auth
+        .createUserWithEmailAndPassword(email: email, password: pass)
+        .then((authResult) {
+      DatabaseService(uid: authResult.user.uid)
+          .updateUserData(name, contact, '', email);
+      Navigator.push(
+          context, MaterialPageRoute(builder: (context) => MainPage()));
+    }).catchError((err) {
+      print(err.code);
+      if (err.code == 'email-already-in-use') {
+        showCupertinoDialog(
+            context: context,
+            builder: (context) {
+              return CupertinoAlertDialog(
+                title: Text(
+                    'This email already has an account associated with it'),
+                actions: <Widget>[
+                  CupertinoDialogAction(
+                    child: Text('OK'),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                  )
+                ],
+              );
+            });
+      }
+    });
   }
+
   void validate() {
     if (formkey.currentState.validate()) {
       formkey.currentState.save();
-      _createUser(email: email,pass: password);
+      _createUser(email: email, pass: password);
     }
   }
 
@@ -72,7 +82,10 @@ class _BodyState extends State<Body> {
           children: <Widget>[
             Text(
               "SIGNUP",
-              style: TextStyle(fontSize: 80.0, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                  fontFamily: 'Pacifico',
+                  fontSize: 80.0,
+                  fontWeight: FontWeight.bold),
             ),
             SizedBox(height: size.height * 0.03),
             Center(
@@ -94,33 +107,32 @@ class _BodyState extends State<Body> {
                             name = textValue;
                           });
                         },
-                        validator: RequiredValidator(errorText: 'Name is required'),
+                        validator:
+                            RequiredValidator(errorText: 'Name is required'),
                       ),
                       Padding(
                         padding: EdgeInsets.symmetric(
                           vertical: 10.0,
-                          horizontal: 50.0,
+                          horizontal: 20.0,
                         ),
                       ),
                       TextFormField(
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(30.0),
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(30.0),
+                            ),
+                            labelText: 'E-mail',
                           ),
-                          labelText: 'E-mail',
-                        ),
-                        onChanged: (textValue) {
-                          setState(() {
-                            email = textValue;
-                          });
-                        },
-                        validator:
-                          emailValidator
-                      ),
+                          onChanged: (textValue) {
+                            setState(() {
+                              email = textValue;
+                            });
+                          },
+                          validator: emailValidator),
                       Padding(
                         padding: EdgeInsets.symmetric(
                           vertical: 10.0,
-                          horizontal: 50.0,
+                          horizontal: 20.0,
                         ),
                       ),
                       TextFormField(
@@ -155,7 +167,10 @@ class _BodyState extends State<Body> {
                             contact = textValue;
                           });
                         },
-                        validator: LengthRangeValidator(min: 10,max: 10,errorText: 'Enter correct mobile number'),
+                        validator: LengthRangeValidator(
+                            min: 10,
+                            max: 10,
+                            errorText: 'Enter correct mobile number'),
                       ),
                       Padding(
                         padding: EdgeInsets.symmetric(
@@ -177,7 +192,7 @@ class _BodyState extends State<Body> {
             AlreadyHaveAnAccountCheck(
               login: false,
               press: () {
-                Navigator.pushReplacement(
+                Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) {
