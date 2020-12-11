@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shoppingapp/MainPage.dart';
 import 'package:shoppingapp/Screens/Login/login_screen.dart';
 import 'package:shoppingapp/Screens/Signup/components/background.dart';
@@ -19,7 +20,7 @@ class Body extends StatefulWidget {
 }
 
 class _BodyState extends State<Body> {
-  String email, password, contact, name;
+  String email, password, contact, name,address;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final dataReference = Firestore.instance;
   GlobalKey<FormState> formkey = GlobalKey<FormState>();
@@ -37,9 +38,15 @@ class _BodyState extends State<Body> {
   void _createUser({String email, String pass}) async {
     _auth
         .createUserWithEmailAndPassword(email: email, password: pass)
-        .then((authResult) {
+        .then((authResult) async {
       DatabaseService(uid: authResult.user.uid)
-          .updateUserData(name, contact, '', email);
+          .updateUserData(name, contact,address, email);
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      prefs.setString('name', name);
+      prefs.setString('mobile', contact);
+      prefs.setString('address', address);
+      prefs.setString('email', email);
+      prefs.setString('uid', authResult.user.uid);
       Navigator.push(
           context, MaterialPageRoute(builder: (context) => MainPage()));
     }).catchError((err) {
@@ -171,6 +178,26 @@ class _BodyState extends State<Body> {
                             min: 10,
                             max: 10,
                             errorText: 'Enter correct mobile number'),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.symmetric(
+                          vertical: 10.0,
+                          horizontal: 20.0,
+                        ),
+                      ),
+                      TextFormField(
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(30.0),
+                          ),
+                          labelText: 'Address',
+                        ),
+                        onChanged: (textValue) {
+                          setState(() {
+                            address = textValue;
+                          });
+                        },
+                        validator: RequiredValidator(errorText: "Address is Required"),
                       ),
                       Padding(
                         padding: EdgeInsets.symmetric(

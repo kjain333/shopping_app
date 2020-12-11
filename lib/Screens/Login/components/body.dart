@@ -1,5 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shoppingapp/MainPage.dart';
 import './background.dart';
 import 'package:shoppingapp/Screens/Signup/signup_screen.dart';
@@ -30,7 +32,16 @@ class _BodyState extends State<Body> {
   ]);
 
   void _signIn({String email,String pass}){
-    _auth.signInWithEmailAndPassword(email: email, password:pass).then((authResult){
+    _auth.signInWithEmailAndPassword(email: email, password:pass).then((authResult) async {
+      final CollectionReference userData = Firestore.instance.collection('userData');
+      final DocumentReference document = userData.doc(authResult.user.uid);
+      final DocumentSnapshot data = await document.get();
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      prefs.setString('name', data.get('name'));
+      prefs.setString('mobile', data.get('PhoneNumber'));
+      prefs.setString('address', data.get('address'));
+      prefs.setString('email', email);
+      prefs.setString('uid', authResult.user.uid);
       Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>MainPage()));
     }).catchError((err){
       print(err.code);
