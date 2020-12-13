@@ -1,9 +1,14 @@
+import 'dart:convert';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shoppingapp/EditProfile.dart';
+import 'package:shoppingapp/HomePage.dart';
 import 'package:shoppingapp/components/themes.dart';
+import 'package:shoppingapp/constants.dart';
+import 'package:shoppingapp/models/OfferModel.dart';
 import 'package:shoppingapp/models/ProductModel.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:toast/toast.dart';
@@ -25,6 +30,11 @@ String addressdetail = address[0];
 var total =100;
 bool Loading = true;
 List<DropdownMenuItem<String>> addressDropDown;
+List<DropdownMenuItem<String>> offersDropDown;
+List<OfferModel> offers = new List();
+List<String> offerNames = new List();
+OfferModel selectedoffer;
+String selectedoffername = "";
 class _PlaceOrder extends State<PlaceOrder>{
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final databaseReference = Firestore.instance;
@@ -57,7 +67,7 @@ class _PlaceOrder extends State<PlaceOrder>{
       'email': prefs.get('email'),
       'phone': prefs.get('mobile'),
     };
-    DocumentReference ref = await databaseReference.collection("orders").add({'products': orderedlist,'quantities': quantity,'address': addressdetail,'user': user}).then((value){
+    DocumentReference ref = await databaseReference.collection("orders").add({'products': orderedlist,'quantities': quantity,'address': addressdetail,'user': user,'coupon': selectedoffer.coupon_code}).then((value){
       Toast.show("Order Placed Successfully", context,duration: Toast.LENGTH_LONG,gravity: Toast.BOTTOM,textColor: Colors.white,backgroundColor: Colors.green,);
       setState(() {
         Loading = false;
@@ -83,6 +93,14 @@ class _PlaceOrder extends State<PlaceOrder>{
         }
     });
   }
+  onChangeDropDownItem1(String item) {
+    total+=int.parse(selectedoffer.price);
+    setState(() {
+      selectedoffername = item;
+      selectedoffer = offers[offerNames.indexOf(item)];
+      total-=int.parse(selectedoffer.price);
+    });
+  }
   SharedPref sharedPref = new SharedPref();
   loadSharedPref() async {
     try{
@@ -92,6 +110,31 @@ class _PlaceOrder extends State<PlaceOrder>{
       myitems.clear();
       Set<String> set;
       set = prefs.getKeys();
+      offers.clear();
+      List<dynamic> json = jsonDecode(prefs.getString('offers'));
+      for(int i=0;i<json.length;i++)
+        {
+          offers.add(OfferModel.fromJson(json[i]));
+        }
+      OfferModel defaultOffer = OfferModel.fromJson({
+        'title': 'None',
+        'price': '0',
+        'description': 'None',
+        'url': 'none',
+        'id': 'none',
+        'coupon code': 'none',
+      });
+      offers.insert(0, defaultOffer);
+      offerNames.clear();
+      for(int i=0;i<offers.length;i++)
+      {
+        offerNames.add(offers[i].title);
+      }
+      offersDropDown = buildDropDownMenuItems(offerNames);
+      selectedoffer = offers[0];
+      selectedoffername = selectedoffer.title;
+
+      total-=int.parse(selectedoffer.price);
       for(String value in set)
       {
         if(value!='freshInstall'&&value.startsWith('cart'))
@@ -146,10 +189,15 @@ class _PlaceOrder extends State<PlaceOrder>{
           body: (Loading==true)?Center(
             child: CircularProgressIndicator(),
           ):(myitems.length==0)?Center(
-            child: Padding(
-              padding: EdgeInsets.all(20),
-              child: Text("Get Started with your shopping crate by adding products to your cart",style: headStyle1,),
-            ),
+            child: GestureDetector(
+              child: Padding(
+                padding: EdgeInsets.all(20),
+                child: Text("Get Started with your shopping crate by adding products to your cart",style: headStyle1,),
+              ),
+              onTap: (){
+                Navigator.push(context, MaterialPageRoute(builder: (context)=>HomePage("All")));
+              },
+            )
           ):Stack(
             children: <Widget>[
               SingleChildScrollView(
@@ -198,14 +246,54 @@ class _PlaceOrder extends State<PlaceOrder>{
                         child:  Text(addressdetail,style: subStyle,),
                       ),
                       trailing: IconButton(
-                          icon: Icon(Icons.edit),
-                          iconSize: 20,
-                          onPressed: () async {
-                            await Navigator.push(context,MaterialPageRoute(builder: (context)=>EditProfile()));
-                            loadSharedPref();
-                            setState(() {
-                            });
-                            },
+                        icon: Icon(Icons.edit),
+                        iconSize: 20,
+                        onPressed: () async {
+                          await Navigator.push(context,MaterialPageRoute(builder: (context)=>EditProfile()));
+                          loadSharedPref();
+                          setState(() {
+                          });
+                        },
+                      ),
+                    ),
+                    Center(
+                      child:  Text("Offers",style: style2,),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 20),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(15),
+                          border: Border.all(
+                              color: Colors.grey),
+                        ),
+                        child: Padding(
+                          padding:
+                          EdgeInsets.only(left: 40, right: 40,top: 10,bottom: 10),
+                          child: DropdownButton(
+                            iconEnabledColor: Colors.black,
+                            iconDisabledColor: Colors.black,
+                            hint: Text("Select Offer"),
+                            isExpanded: true,
+                            value: selectedoffername,
+                            items: offersDropDown,
+                            onChanged: onChangeDropDownItem1,
+                          ),
+                        ),
+                      ),
+                    ),
+                    ListTile(
+                      title: Container(
+                        width: MediaQuery.of(context).size.width-50,
+                        child:  Text("Selected Offer Code: "+selectedoffer.coupon_code,style: subStyle,),
+                      ),
+                    ),
+                    ListTile(
+                      title: Container(
+                        width: MediaQuery.of(context).size.width-50,
+                        child:  Text("Selected Discount amount: Rs. "+selectedoffer.price+"/-",style: subStyle,),
                       ),
                     ),
                     SizedBox(
@@ -248,7 +336,7 @@ class _PlaceOrder extends State<PlaceOrder>{
                               height: 80,
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(5),
-                                color: Colors.lightBlueAccent,
+                                color: kPrimaryColor,
                               ),
                               child: Padding(
                                 padding: EdgeInsets.all(10),

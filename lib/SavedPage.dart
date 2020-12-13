@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shoppingapp/HomePage.dart';
 import 'package:shoppingapp/Product.dart';
 import 'package:shoppingapp/components/themes.dart';
 import 'package:shoppingapp/models/ProductModel.dart';
@@ -56,16 +57,19 @@ class _SavedPageState extends State<SavedPage>{
             'Khati Khuwa',
             style: headStyle,
           ),
-          actions: [
-            IconButton(icon: Icon(Icons.search_rounded), onPressed: (){
-              setState(() {
-                expanded = !expanded;
-              });
-            })
-          ],
         ),
         drawer: buildDrawer(context),
-        body: Stack(
+        body: (items.length==0)?Center(
+          child:GestureDetector(
+             child:  Padding(
+               padding: EdgeInsets.all(10),
+               child: Text("Get Started with adding your products to your wish-list as we provide you with more offers and products",style: headStyle1,),
+             ),
+              onTap: (){
+               Navigator.push(context, MaterialPageRoute(builder: (context)=>HomePage("All")));
+              },
+          )
+        ):Stack(
           children: <Widget>[
             Container(
               height: MediaQuery.of(context).size.height,

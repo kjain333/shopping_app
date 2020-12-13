@@ -1,18 +1,23 @@
+import 'dart:ui';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shoppingapp/PlaceOrder.dart';
 import 'package:shoppingapp/components/themes.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shoppingapp/constants.dart';
 import 'package:shoppingapp/models/ProductModel.dart';
 import 'package:shoppingapp/models/SharedPreferences.dart';
 import 'MyDrawer.dart';
 import 'Product.dart';
 
 class HomePage extends StatefulWidget{
+  String selected;
+  HomePage(this.selected);
   @override
   State<StatefulWidget> createState() {
-    return _HomePageState();
+    return _HomePageState(selected);
   }
 }
 int selectedIndex = 0;
@@ -21,15 +26,26 @@ List<QueryDocumentSnapshot> data;
 bool expanded = false;
 List<bool> bookmark;
 List<bool> cart;
+ScrollController scrollController = new ScrollController();
 class _HomePageState extends State<HomePage>{
   SharedPref sharedPref = new SharedPref();
   final databaseReference = Firestore.instance;
+  String myselectedcategory;
+  _HomePageState(this.myselectedcategory);
   @override
   void initState() {
     data = new List();
     bookmark = new List();
     cart = new List();
     Loading = true;
+    for(int i=0;i<categories.length;i++)
+      {
+        if(categories[i]==myselectedcategory)
+          {
+            selectedIndex=i;
+            break;
+          }
+      }
     super.initState();
   }
   void GetBookMarks() async {
@@ -71,21 +87,32 @@ class _HomePageState extends State<HomePage>{
   bool Loading = true;
   @override
   Widget build(BuildContext context) {
+    if(selectedIndex>3)
+      scrollController = ScrollController(initialScrollOffset: MediaQuery.of(context).size.width);
+    else
+      scrollController = ScrollController(initialScrollOffset: 0);
     return Scaffold(
         appBar: AppBar(
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back),
+            iconSize: 25,
+            onPressed: (){
+              Navigator.pop(context);
+            },
+          ),
           title: Text(
             'Khati Khuwa',
             style: headStyle,
           ),
           actions: [
-            IconButton(icon: Icon(Icons.search_rounded), onPressed: (){
+            IconButton(icon: Icon(Icons.filter_list), onPressed: (){
               setState(() {
                 expanded = !expanded;
               });
             })
           ],
+          elevation: 0,
         ),
-      drawer: buildDrawer(context),
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.shopping_cart),
         onPressed: () async{
@@ -116,79 +143,42 @@ class _HomePageState extends State<HomePage>{
                   Container(
                     height: MediaQuery.of(context).size.height,
                     width: MediaQuery.of(context).size.width,
-                    color: active,
+                    color: kPrimaryColor,
                     child: Column(
-                      children: <Widget>[
-                        Padding(
-                            padding: EdgeInsets.all(30),
-                            child: Container(
-                              height: 60,
-                              width: MediaQuery.of(context).size.width-60,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(5),
-                                color: selected,
+                      children: [
+                         Container(
+                              height: 70,
+                              width: MediaQuery.of(context).size.width,
+                              child: SingleChildScrollView(
+                                controller: scrollController,
+                                scrollDirection: Axis.horizontal,
+                                child: Row(
+                                  children: categories.map((e) => MyChip(e)).toList(),
+                                ),
                               ),
-                              child: Row(
-                                children: <Widget>[
-                                  Padding(
-                                    padding: EdgeInsets.all(10),
-                                    child: Icon(Icons.search,size: 30,color: Colors.white,),
-                                  ),
-                                  Container(
-                                    height: 60,
-                                    width: MediaQuery.of(context).size.width-120,
-                                    child: Padding(
-                                      padding: EdgeInsets.all(0),
-                                      child: TextField(
-                                        style: style1,
-                                        decoration: InputDecoration(
-                                          hintText: "Search",
-                                          hintStyle: style1,
-                                          focusedBorder: OutlineInputBorder(
-                                              borderSide: BorderSide(color: Colors.transparent)
-                                          ),
-                                          enabledBorder: OutlineInputBorder(
-                                              borderSide: BorderSide(color: Colors.transparent)
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  )
-                                ],
-                              ),
-                            )
-                        ),
-                        Padding(
-                          padding: EdgeInsets.only(left: 20,right: 20),
-                          child: SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: Row(
-                              children: categories.map((e) => MyChip(e)).toList(),
-                            ),
-                          ),
-                        )
+                         ),
                       ],
-                    ),
+                    )
                   ),
                   Positioned(
-                      top: (expanded)?200:0,
+                      top: (expanded)?70:0,
                       child: Container(
                           width: MediaQuery.of(context).size.width,
-                          height: MediaQuery.of(context).size.height-((expanded)?250:0),
+                          height: MediaQuery.of(context).size.height-((expanded)?120:0),
                           decoration: BoxDecoration(
                             color: Colors.white,
                           ),
                           child: Column(
                             children: <Widget>[
                               Container(
-                                  height: MediaQuery.of(context).size.height-((expanded)?360:150),
+                                  height: MediaQuery.of(context).size.height-((expanded)?150:90),
                                   width: MediaQuery.of(context).size.width,
                                   child: SingleChildScrollView(
                                     child: Wrap(
                                       children: data.map((e) => MyData(e)).toList(),
                                     ),
                                   )
-                              )
+                              ),
                             ],
                           )
                       )
@@ -291,12 +281,12 @@ class _HomePageState extends State<HomePage>{
         child: Container(
           height: 50,
           decoration: BoxDecoration(
-            color: (selectedIndex==index)?selected:active,
+            color: (selectedIndex==index)?kPrimaryLightColor:kPrimaryColor,
             borderRadius: BorderRadius.circular(10),
           ),
           child: Padding(
             padding: EdgeInsets.all(10),
-            child: Text(data,style: (selectedIndex==index)?style1:subStyle,),
+            child: Text(data,style: (selectedIndex!=index)?style1:subStyle1,),
           ),
         ),
         onTap: (){

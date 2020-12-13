@@ -49,21 +49,18 @@ buildDrawer(context){
                 SizedBox(
                   height: 30,
                 ),
-                Container(
-                  height: 90,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.orangeAccent
+                Center(
+                  child: Container(
+                    height: 200,
+                    width: 200,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                        image: DecorationImage(
+                            image: AssetImage('Assets/icons/welcome_logo.png')
+                        )
+                    ),
+
                   ),
-                  child: CircleAvatar(
-                    radius: 40,
-                    backgroundImage: NetworkImage("https://flutter.io/images/catalog-widget-placeholder.png"),//AssetImage("assets/images/app_logo.png"),
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.all(20),
-                  child: Text("@instagram_handle",style: subStyle),
                 ),
                 SizedBox(height: 5.0),
                 SizedBox(height: 70.0),
