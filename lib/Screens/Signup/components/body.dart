@@ -20,7 +20,7 @@ class Body extends StatefulWidget {
 }
 
 class _BodyState extends State<Body> {
-  String email, password, contact, name,address;
+  String email, password, contact, name, address;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final dataReference = Firestore.instance;
   GlobalKey<FormState> formkey = GlobalKey<FormState>();
@@ -40,7 +40,7 @@ class _BodyState extends State<Body> {
         .createUserWithEmailAndPassword(email: email, password: pass)
         .then((authResult) async {
       DatabaseService(uid: authResult.user.uid)
-          .updateUserData(name, contact,address, email);
+          .updateUserData(name, contact, address, email);
       SharedPreferences prefs = await SharedPreferences.getInstance();
       prefs.setString('name', name);
       prefs.setString('mobile', contact);
@@ -90,11 +90,11 @@ class _BodyState extends State<Body> {
             Text(
               "SIGNUP",
               style: TextStyle(
-                  fontFamily: 'Pacifico',
-                  fontSize: 80.0,
-                  fontWeight: FontWeight.bold),
+                fontFamily: 'Pacifico',
+                fontSize: 40.0,
+              ),
             ),
-            SizedBox(height: size.height * 0.03),
+            SizedBox(height: size.height * 0.01),
             Center(
               child: Form(
                 key: formkey,
@@ -104,6 +104,8 @@ class _BodyState extends State<Body> {
                     children: <Widget>[
                       TextFormField(
                         decoration: InputDecoration(
+                          contentPadding: EdgeInsets.symmetric(
+                              horizontal: 20.0, vertical: 5.0),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(30.0),
                           ),
@@ -119,12 +121,14 @@ class _BodyState extends State<Body> {
                       ),
                       Padding(
                         padding: EdgeInsets.symmetric(
-                          vertical: 10.0,
+                          vertical: 5.0,
                           horizontal: 20.0,
                         ),
                       ),
                       TextFormField(
                           decoration: InputDecoration(
+                            contentPadding: EdgeInsets.symmetric(
+                                horizontal: 20.0, vertical: 5.0),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(30.0),
                             ),
@@ -138,12 +142,14 @@ class _BodyState extends State<Body> {
                           validator: emailValidator),
                       Padding(
                         padding: EdgeInsets.symmetric(
-                          vertical: 10.0,
+                          vertical: 5.0,
                           horizontal: 20.0,
                         ),
                       ),
                       TextFormField(
                         decoration: InputDecoration(
+                          contentPadding: EdgeInsets.symmetric(
+                              horizontal: 20.0, vertical: 5.0),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(30.0),
                           ),
@@ -158,12 +164,14 @@ class _BodyState extends State<Body> {
                       ),
                       Padding(
                         padding: EdgeInsets.symmetric(
-                          vertical: 10.0,
-                          horizontal: 50.0,
+                          vertical: 5.0,
+                          horizontal: 20.0,
                         ),
                       ),
                       TextFormField(
                         decoration: InputDecoration(
+                          contentPadding: EdgeInsets.symmetric(
+                              horizontal: 20.0, vertical: 5.0),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(30.0),
                           ),
@@ -181,12 +189,14 @@ class _BodyState extends State<Body> {
                       ),
                       Padding(
                         padding: EdgeInsets.symmetric(
-                          vertical: 10.0,
+                          vertical: 5.0,
                           horizontal: 20.0,
                         ),
                       ),
                       TextFormField(
                         decoration: InputDecoration(
+                          contentPadding: EdgeInsets.symmetric(
+                              horizontal: 20.0, vertical: 5.0),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(30.0),
                           ),
@@ -197,7 +207,8 @@ class _BodyState extends State<Body> {
                             address = textValue;
                           });
                         },
-                        validator: RequiredValidator(errorText: "Address is Required"),
+                        validator:
+                            RequiredValidator(errorText: "Address is Required"),
                       ),
                       Padding(
                         padding: EdgeInsets.symmetric(
@@ -229,24 +240,6 @@ class _BodyState extends State<Body> {
                 );
               },
             ),
-            OrDivider(),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                SocalIcon(
-                  iconSrc: "Assets/icons/facebook.svg",
-                  press: () {},
-                ),
-                SocalIcon(
-                  iconSrc: "Assets/icons/twitter.svg",
-                  press: () {},
-                ),
-                SocalIcon(
-                  iconSrc: "Assets/icons/google-plus.svg",
-                  press: () {},
-                ),
-              ],
-            )
           ],
         ),
       ),

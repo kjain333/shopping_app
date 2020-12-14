@@ -14,8 +14,8 @@ class Body extends StatefulWidget {
   @override
   _BodyState createState() => _BodyState();
 }
-class _BodyState extends State<Body> {
 
+class _BodyState extends State<Body> {
   String email, password;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final emailValidator = MultiValidator([
@@ -31,9 +31,12 @@ class _BodyState extends State<Body> {
         errorText: 'passwords must have at least one special character')
   ]);
 
-  void _signIn({String email,String pass}){
-    _auth.signInWithEmailAndPassword(email: email, password:pass).then((authResult) async {
-      final CollectionReference userData = Firestore.instance.collection('userData');
+  void _signIn({String email, String pass}) {
+    _auth
+        .signInWithEmailAndPassword(email: email, password: pass)
+        .then((authResult) async {
+      final CollectionReference userData =
+          Firestore.instance.collection('userData');
       final DocumentReference document = userData.doc(authResult.user.uid);
       final DocumentSnapshot data = await document.get();
       SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -42,30 +45,34 @@ class _BodyState extends State<Body> {
       prefs.setString('address', data.get('address'));
       prefs.setString('email', email);
       prefs.setString('uid', authResult.user.uid);
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>MainPage()));
-    }).catchError((err){
+      Navigator.pushReplacement(
+          context, MaterialPageRoute(builder: (context) => MainPage()));
+    }).catchError((err) {
       print(err.code);
-      if(err.code == 'wrong-password'||err.code=='user-not-found'){
-        showCupertinoDialog(context: context, builder: (context){
-          return CupertinoAlertDialog(
-            title: Text(
-                'Incorrect credentials'
-            ),
-            actions: <Widget>[
-              CupertinoDialogAction(child: Text('OK'),
-                onPressed: (){
-                  Navigator.pop(context);
-                },)
-            ],
-          );
-        });
+      if (err.code == 'wrong-password' || err.code == 'user-not-found') {
+        showCupertinoDialog(
+            context: context,
+            builder: (context) {
+              return CupertinoAlertDialog(
+                title: Text('Incorrect credentials'),
+                actions: <Widget>[
+                  CupertinoDialogAction(
+                    child: Text('OK'),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                  )
+                ],
+              );
+            });
       }
     });
   }
+
   void validate() {
     if (formkey.currentState.validate()) {
       formkey.currentState.save();
-      _signIn(email: email,pass: password);
+      _signIn(email: email, pass: password);
     }
   }
 
@@ -79,7 +86,7 @@ class _BodyState extends State<Body> {
           children: <Widget>[
             Text(
               "LOGIN",
-              style: TextStyle(fontSize: 80.0, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 40.0),
             ),
             SizedBox(height: size.height * 0.03),
             Center(

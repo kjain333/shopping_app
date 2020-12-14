@@ -16,16 +16,23 @@ class Body extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Text(
-              "Welcome!!",
-              style: TextStyle(fontSize: 80.0, fontWeight: FontWeight.bold),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(30, 60, 30, 30),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(0, 60, 0, 0),
+                child: Text(
+                  "Welcome!",
+                  style: TextStyle(
+                    fontSize: 60.0,
+                  ),
+                ),
+              ),
             ),
-            SizedBox(height: size.height * 0.05),
             SvgPicture.asset(
               "Assets/icons/welcome_logo.svg",
-              height: size.height * 0.45,
+              height: size.height * 0.2,
             ),
-            SizedBox(height: size.height * 0.05),
+            SizedBox(height: size.height * 0.03),
             RoundedButton(
               text: "LOGIN",
               press: () {
