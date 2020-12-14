@@ -122,7 +122,7 @@ class _PlaceOrder extends State<PlaceOrder>{
         'description': 'None',
         'url': 'none',
         'id': 'none',
-        'coupon code': 'none',
+        'coupon': 'none',
       });
       offers.insert(0, defaultOffer);
       offerNames.clear();

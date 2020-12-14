@@ -13,13 +13,13 @@ class OfferModel{
     this.url = d['url'];
     this.price = d['price'];
     this.id = d['id'];
-    this.coupon_code = d['coupon code'];
+    this.coupon_code = d['coupon'];
   }
   OfferModel.fromJson(Map<String,dynamic> json)
       :title=json['title'],
         url=json['url'],
         description=json['description'],
-        coupon_code=json['coupon code'],
+        coupon_code=json['coupon'],
         id=json['id'],
         price=json['price'];
 
@@ -28,7 +28,7 @@ class OfferModel{
       "title": this.title,
       "url": this.url,
       "description": this.description,
-      "coupon code": this.coupon_code,
+      "coupon": this.coupon_code,
       "price": this.price,
       "id": this.id
     };

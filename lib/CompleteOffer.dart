@@ -63,7 +63,7 @@ class CompleteOffer extends StatelessWidget{
             Padding(
               padding: EdgeInsets.all(20),
               child: Center(
-                child: Text(e.get('coupon code'),style: subStyle,),
+                child: Text(e.get('coupon'),style: subStyle,),
               ),
             ),
             SizedBox(
