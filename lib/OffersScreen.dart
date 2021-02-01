@@ -5,8 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter_carousel_slider/carousel_slider.dart';
-import 'package:flutter_carousel_slider/carousel_slider_indicators.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shoppingapp/HomePage.dart';
 import 'package:shoppingapp/models/OfferModel.dart';
@@ -56,11 +55,13 @@ class _OffersScreen extends State<OffersScreen> {
     prefs.setString('offers', jsonEncode(offers));
   }
 
-  Future getOfferImg() async {
+  List<QueryDocumentSnapshot> offercarousel = new List();
+  Future<void> getOfferImg() async {
     var firestore = Firestore.instance;
     QuerySnapshot query =
         await firestore.collection("offer_greeting").getDocuments();
-    return query.documents;
+
+    offercarousel = query.documents;
   }
 
   @override
@@ -141,36 +142,32 @@ class _OffersScreen extends State<OffersScreen> {
                       SizedBox(
                         height: 20,
                       ),
-                      Container(
-                        height: 300,
-                        child: FutureBuilder(
-                          future: getOfferImg(),
-                          builder: (_, snapshot) {
-                            return CarouselSlider.builder(
-                              slideBuilder: (index) {
-                                DocumentSnapshot sliderimage =
-                                    snapshot.data[index];
-                                return GestureDetector(
-                                  child: Container(
-                                    height: 300,
-                                    width: MediaQuery.of(context).size.width,
-                                    decoration: BoxDecoration(
-                                        image: DecorationImage(
-                                      image: NetworkImage(sliderimage['url']),
-                                      fit: BoxFit.fill,
-                                    )),
-                                  ),
-                                );
-                              },
-                              slideIndicator: CircularSlideIndicator(
-                                  indicatorBackgroundColor: Colors.white,
-                                  currentIndicatorColor:
-                                      Colors.lightBlueAccent),
-                              itemCount: snapshot.data.length,
-                            );
-                          },
+                      CarouselSlider(
+                        options: CarouselOptions(
+                          height: 300.0,
+                          autoPlayInterval: Duration(seconds: 3),
+                          scrollDirection: Axis.horizontal,
+                          autoPlay: true,
+                          enableInfiniteScroll: true,
+                          enlargeCenterPage: true,
                         ),
+                        items: data.map((i) {
+                          return Builder(
+                            builder: (BuildContext context) {
+                              return Container(
+                                  width: MediaQuery.of(context).size.width,
+                                  margin: EdgeInsets.symmetric(horizontal: 5.0),
+                                  child: Image(
+                                    image: NetworkImage(i['url']),
+                                    fit: BoxFit.cover,
+                                  ));
+                            },
+                          );
+                        }
+                        ).toList(),
                       ),
+
+                      //carousel goes here
                       Column(
                         children: categories.map((e) {
                           int index = categories.indexOf(e);
