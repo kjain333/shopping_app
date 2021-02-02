@@ -50,15 +50,7 @@ class _EditProfile extends State<EditProfile>{
   @override
   Widget build(BuildContext context) {
    return Scaffold(
-    appBar: AppBar(
-      title: Text("Khati Khuwa",style: headStyle,),
-      leading: GestureDetector(
-        child: Icon(Icons.arrow_back,color: Colors.white,),
-        onTap: (){
-          Navigator.pop(context);
-        },
-      ),
-    ),
+    appBar: appBar1(context),
      body: (loading==true)?Center(
        child: CircularProgressIndicator(),
      ):SingleChildScrollView(

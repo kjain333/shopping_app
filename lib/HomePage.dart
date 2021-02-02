@@ -25,9 +25,12 @@ int selectedIndex = 0;
 List<String> categories = ["All","Traditional Clothes","Jewellery","Pickles","Spices","Hand Craft","Food Items","Daily Needs"];
 List<QueryDocumentSnapshot> data;
 bool expanded = false;
+bool tosearch = false;
 List<bool> bookmark;
 List<bool> cart;
 ScrollController scrollController = new ScrollController();
+String search = "";
+String value = "";
 class _HomePageState extends State<HomePage>{
   SharedPref sharedPref = new SharedPref();
   final databaseReference = Firestore.instance;
@@ -39,6 +42,7 @@ class _HomePageState extends State<HomePage>{
     bookmark = new List();
     cart = new List();
     Loading = true;
+    search = "";
     for(int i=0;i<categories.length;i++)
       {
         if(categories[i]==myselectedcategory)
@@ -56,12 +60,12 @@ class _HomePageState extends State<HomePage>{
     final prefs = await SharedPreferences.getInstance();
     set = prefs.getKeys();
     for(int i=0;i<data.length;i++) {
-      if (set.contains('bookmark'+data[i]['id'])) {
+      if (set.contains('bookmark'+data[i].id)) {
         bookmark.add(true);
       }
       else
         bookmark.add(false);
-      if(set.contains('cart'+data[i]['id'])){
+      if(set.contains('cart'+data[i].id)){
         cart.add(true);
       }
       else
@@ -72,18 +76,16 @@ class _HomePageState extends State<HomePage>{
     });
   }
   void ChangeBookMark(QueryDocumentSnapshot querydata) async {
-    ProductModel saved = new ProductModel(querydata);
     if(bookmark[data.indexOf(querydata)]==false)
-      await sharedPref.save('bookmark'+querydata['id'], saved);
+      await sharedPref.save('bookmark'+querydata.id,true);
     else
-      await sharedPref.remove('bookmark'+querydata['id']);
+      await sharedPref.remove('bookmark'+querydata.id);
   }
   void ChangeCart(QueryDocumentSnapshot querydata) async {
-    ProductModel saved = new ProductModel(querydata);
     if(cart[data.indexOf(querydata)]==false)
-      await sharedPref.save('cart'+querydata['id'], saved);
+      await sharedPref.save('cart'+querydata.id,true);
     else
-      await sharedPref.remove('cart'+querydata['id']);
+      await sharedPref.remove('cart'+querydata.id);
   }
   bool Loading = true;
   @override
@@ -101,11 +103,29 @@ class _HomePageState extends State<HomePage>{
               Navigator.pop(context);
             },
           ),
-          title: Text(
-            'Khati Khuwa',
+          title: (tosearch)?TextField(
+
+            textCapitalization: TextCapitalization.words,
+            style: TextStyle(color: Colors.white,fontSize: 16),
+            decoration: InputDecoration(
+              hintText: "Search",
+              hintStyle: TextStyle(fontSize: 16,color: Colors.white),
+            ),
+            onChanged: (text){
+              setState(() {
+                search = text;
+              });
+            },
+          ):Text(
+            'Magenta',
             style: headStyle,
           ),
           actions: [
+            IconButton(icon: Icon(Icons.search), onPressed: (){
+              setState(() {
+                tosearch = !tosearch;
+              });
+            }),
             IconButton(icon: Icon(Icons.filter_list), onPressed: (){
               setState(() {
                 expanded = !expanded;
@@ -130,9 +150,11 @@ class _HomePageState extends State<HomePage>{
         builder: (BuildContext context,AsyncSnapshot<QuerySnapshot> snapshot){
           if((snapshot.connectionState==ConnectionState.done))
             {
+
               if(Loading==true)
                 {
-                  data = (snapshot.data.docs);
+                  data = snapshot.data.docs;
+                  print(search);
                   GetBookMarks();
                   return Center(
                     child: CircularProgressIndicator(),
@@ -206,6 +228,10 @@ class _HomePageState extends State<HomePage>{
               break;
             }
         }
+      if(!querydata.get('title').toString().toLowerCase().contains(search.toLowerCase()))
+        {
+          flag=0;
+        }
       return (flag==0)?Container(height: 0,width: 0,):GestureDetector(
         child: Container(
           width: MediaQuery.of(context).size.width/2,
@@ -265,7 +291,7 @@ class _HomePageState extends State<HomePage>{
           ),
         ),
         onTap: (){
-          Navigator.push(context, MaterialPageRoute(builder: (context)=>Product(ProductModel(querydata)))).whenComplete((){
+          Navigator.push(context, MaterialPageRoute(builder: (context)=>Product(ProductModel(querydata),cart[data.indexOf(querydata)]))).whenComplete((){
             setState(() {
               Loading = true;
               GetBookMarks();

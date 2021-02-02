@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -20,6 +21,7 @@ int selectedIndex = 0;
 List<String> categories = ["All","Traditional Clothes","Jewellery","Pickles","Spices","Hand Craft","Food Items","Daily Needs"];
 List<ProductModel> items;
 bool expanded = false;
+bool loading = true;
 class _SavedPageState extends State<SavedPage>{
   SharedPref sharedPref = new SharedPref();
   loadSharedPref() async {
@@ -28,38 +30,45 @@ class _SavedPageState extends State<SavedPage>{
       items.clear();
       Set<String> set;
       set = prefs.getKeys();
+      CollectionReference snapshot = FirebaseFirestore.instance.collection("products");
       for(String value in set)
       {
+        print(value);
         if(value!='freshInstall'&&value.startsWith('bookmark'))
         {
-          ProductModel s = ProductModel.fromJson(await sharedPref.read(value));
-          if(!items.contains(s))
-            items.add(s);
+          DocumentSnapshot data = await snapshot.doc(value.substring(8)).get();
+          if(data!=null&&data.exists)
+            {
+              print(value);
+              print(value.substring(8));
+              ProductModel s = ProductModel(data);
+              if(!items.contains(s))
+                items.add(s);
+            }
         }
       }
     } catch (e){
       print(e);
     }
     setState(() {
+      loading = false;
     });
   }
   @override
   void initState() {
     items = new List();
+    loading = true;
     loadSharedPref();
     super.initState();
   }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text(
-            'Khati Khuwa',
-            style: headStyle,
-          ),
-        ),
+        appBar: appBar,
         drawer: buildDrawer(context),
-        body: (items.length==0)?Center(
+        body: (loading==true)?Center(
+          child: CircularProgressIndicator(),
+        ):(items.length==0)?Center(
           child:GestureDetector(
              child:  Padding(
                padding: EdgeInsets.all(10),
@@ -207,8 +216,22 @@ class _SavedPageState extends State<SavedPage>{
           ],
         ),
       ),
-      onTap: (){
-        Navigator.push(context, MaterialPageRoute(builder: (context)=>Product(productModel)));
+      onTap: () async {
+        bool cart;
+        SharedPref pref = new SharedPref();
+        dynamic value = await pref.read("cart"+productModel.uniqueId);
+        print(value.toString());
+        if(value==null||value!=true)
+          {
+            cart = false;
+          }
+        else
+          {
+            cart = true;
+          }
+        await Navigator.push(context, MaterialPageRoute(builder: (context)=>Product(productModel,cart)));
+        setState(() {
+        });
       },
     );
   }

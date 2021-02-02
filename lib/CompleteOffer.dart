@@ -10,20 +10,7 @@ class CompleteOffer extends StatelessWidget{
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          iconSize: 25,
-          onPressed: (){
-            Navigator.pop(context);
-          },
-        ),
-        title: Text(
-          'Khati Khuwa',
-          style: headStyle,
-        ),
-        elevation: 0,
-      ),
+      appBar: appBar1(context),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

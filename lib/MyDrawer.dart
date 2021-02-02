@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shoppingapp/EditProfile.dart';
+import 'package:shoppingapp/MyOrders.dart';
 
 import 'components/oval_right_clipper.dart';
 import 'components/themes.dart';
@@ -14,6 +15,8 @@ Widget _buildRow(BuildContext context,IconData icon, String title,int index, {bo
 
   return GestureDetector(
     onTap: (){
+      if(index==0)
+        Navigator.push(context, MaterialPageRoute(builder: (context)=>MyOrders()));
       if(index==2)
         Navigator.push(context, MaterialPageRoute(builder: (context)=>EditProfile()));
     },
@@ -67,6 +70,8 @@ buildDrawer(context){
                 Center(
                   child: Column(
                     children: <Widget>[
+                      _buildRow(context,Icons.shopping_bag_rounded,"Your Orders",0),
+                      _buildDivider(),
                       _buildRow(context,Icons.share, "Share App",1),
                       _buildDivider(),
                       _buildRow(context,Icons.account_circle, "Edit Profile",2, showBadge: true),

@@ -49,7 +49,6 @@ class _PlaceOrder extends State<PlaceOrder>{
     return items;
   }
   void DeleteProduct(String id) async {
-    final prefs = SharedPreferences.getInstance();
     await sharedPref.remove(id);
     setState(() {
       Loading = false;
@@ -66,6 +65,7 @@ class _PlaceOrder extends State<PlaceOrder>{
       'name': prefs.get('name'),
       'email': prefs.get('email'),
       'phone': prefs.get('mobile'),
+      'userId': _auth.currentUser.uid
     };
     DocumentReference ref = await databaseReference.collection("orders").add({'products': orderedlist,'quantities': quantity,'address': addressdetail,'user': user,'coupon': selectedoffer.coupon_code}).then((value){
       Toast.show("Order Placed Successfully", context,duration: Toast.LENGTH_LONG,gravity: Toast.BOTTOM,textColor: Colors.white,backgroundColor: Colors.green,);
@@ -133,18 +133,21 @@ class _PlaceOrder extends State<PlaceOrder>{
       offersDropDown = buildDropDownMenuItems(offerNames);
       selectedoffer = offers[0];
       selectedoffername = selectedoffer.title;
-
       total-=int.parse(selectedoffer.price);
       for(String value in set)
       {
         if(value!='freshInstall'&&value.startsWith('cart'))
         {
-          ProductModel s = ProductModel.fromJson(await sharedPref.read(value));
-          if(!myitems.contains(s))
+          DocumentSnapshot newSnapshot = await FirebaseFirestore.instance.collection("products").doc(value.substring(4)).get();
+          if(newSnapshot!=null&&newSnapshot.exists)
             {
-              myitems.add(s);
-              quantity.add(1);
-              total+=int.parse(s.price);
+              ProductModel s = ProductModel(newSnapshot);
+              if(!myitems.contains(s))
+              {
+                myitems.add(s);
+                quantity.add(1);
+                total+=int.parse(s.price);
+              }
             }
         }
       }
@@ -157,6 +160,7 @@ class _PlaceOrder extends State<PlaceOrder>{
   }
   @override
   void initState() {
+    Loading = true;
     addressDropDown = buildDropDownMenuItems(addresstype);
     myitems = new List();
     quantity = new List();
@@ -169,23 +173,7 @@ class _PlaceOrder extends State<PlaceOrder>{
   Widget build(BuildContext context) {
     return WillPopScope(
       child: Scaffold(
-          appBar: AppBar(
-            leading: IconButton(
-              icon: Icon(Icons.arrow_back),
-              iconSize: 20,
-              color: Colors.white,
-              onPressed: (){
-                Navigator.pop(context,(){
-                  setState(() {
-                  });
-                });
-              },
-            ),
-            title: Text(
-              'Khati Khuwa',
-              style: headStyle,
-            ),
-          ),
+          appBar: appBar1(context),
           body: (Loading==true)?Center(
             child: CircularProgressIndicator(),
           ):(myitems.length==0)?Center(
@@ -463,7 +451,7 @@ class _PlaceOrder extends State<PlaceOrder>{
               setState(() {
                 Loading = true;
                 total-=int.parse(productModel.price)*quantity[myitems.indexOf(productModel)];
-                DeleteProduct('cart'+productModel.id);
+                DeleteProduct('cart'+productModel.uniqueId);
                 quantity.removeAt(myitems.indexOf(productModel));
                 myitems.remove(productModel);
               });

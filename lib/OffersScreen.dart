@@ -72,12 +72,7 @@ class _OffersScreen extends State<OffersScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text(
-            'Khati Khuwa',
-            style: headStyle,
-          ),
-        ),
+        appBar: appBar,
         floatingActionButton: FloatingActionButton(
           child: Icon(Icons.shopping_cart),
           onPressed: () {

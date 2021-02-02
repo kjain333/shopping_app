@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:shoppingapp/components/themes.dart';
 
 class FullImage extends StatelessWidget {
   final String image;
@@ -8,6 +9,7 @@ class FullImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: appBar1(context),
       body: Container(
         child: GestureDetector(
           child: Container(

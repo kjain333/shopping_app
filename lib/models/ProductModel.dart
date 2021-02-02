@@ -7,13 +7,15 @@ class ProductModel{
   List<String> categories;
   String price;
   String id;
-  ProductModel(QueryDocumentSnapshot d){
+  String uniqueId;
+  ProductModel(DocumentSnapshot d){
     this.title = d['title'];
     this.subtitle = d['subtitle'];
     this.description = d['description'];
     this.url = d['url'];
     this.price = d['price'];
     this.id = d['id'];
+    this.uniqueId = d.id;
     List<String> mycategories = new List();
     for(int i=0;i<d['categories'].length;i++)
     {
